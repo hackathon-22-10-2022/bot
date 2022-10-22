@@ -25,6 +25,9 @@ class AbstarctMongoDB(ABC):
 	async def delete_one(self, filter: dict) -> dict:
 		return await self.collection.delete_one(filter)
 	
+	async def find_all(self) -> list:
+		return await self.collection.find().to_list(None)
+
 
 class MongoFieldsDB(AbstarctMongoDB):
 	def __init__(self):

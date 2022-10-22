@@ -9,6 +9,9 @@ load_dotenv()
 
 
 class Config:
+    TELEGRAM_TOKEN_BOT = None
+    MONGO_DB_URL = None
+
     def __init__(self):
         self.TELEGRAM_TOKEN_BOT = os.getenv('TELEGRAM_TOKEN_BOT')
         self.MONGO_DB_URL = os.getenv('MONGO_DB_URL')
