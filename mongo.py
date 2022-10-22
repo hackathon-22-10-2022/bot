@@ -27,23 +27,36 @@ class AbstarctMongoDB(ABC):
 	
 	async def find_all(self) -> list:
 		return await self.collection.find().to_list(None)
-	
+
+
+class MongoFieldsDB(AbstarctMongoDB):
+	def __init__(self):
+		super().__init__()
+		self.collection = mongo_config.get_mongo_collection_fields()
+
+
+class MongoUsersDB(AbstarctMongoDB):
+	def __init__(self):
+		super().__init__()
+		self.collection = mongo_config.get_mongo_collection_users()
+
+	async def get_senders(self) -> set[int]:
+		objects = await self.find_many({'senders': {'$exists': True}})
+		return set(objects[0]['senders'])
+
+	async def get_foremans(self) -> set[int]:
+		objects = await self.find_many({'foremans': {'$exists': True}})
+		return set(objects[0]['foremans'])
+
+
+class MongoAnswersDB(AbstarctMongoDB):
+	def __init__(self):
+		super().__init__()
+		self.collection = mongo_config.get_mongo_collection_answers()
+
 	async def insert_answer(self, field_object_id: str, user_id: int, answer: list[str] | list[int]) -> str:
 		return await self.insert_one({
 			'to_field': field_object_id,
 			'from': user_id,
 			'answer': answer,
 		})
-
-
-class MongoFieldsDB(AbstarctMongoDB):
-	def __init__(self):
-		self.collection = mongo_config.get_mongo_collection_fields()
-
-class MongoUsersDB(AbstarctMongoDB):
-	def __init__(self):
-		self.collection = mongo_config.get_mongo_collection_users()
-
-class MongoAnswersDB(AbstarctMongoDB):
-	def __init__(self):
-		self.collection = mongo_config.get_mongo_collection_answers()

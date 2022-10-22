@@ -6,6 +6,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from handlers import start, answer
 from config import config
 from forms import Form
+from middleware import WhileListUsersMiddleware
 
 storage = MemoryStorage()
 bot = Bot(token=config.TELEGRAM_TOKEN_BOT, parse_mode=types.ParseMode.HTML)
@@ -18,6 +19,7 @@ logging.basicConfig(
 	datefmt='%H:%M:%S %d.%m.%Y',
 )
 
+dp.middleware.setup(WhileListUsersMiddleware())
 
 dp.register_message_handler(start.start, commands=['start'])
 dp.register_message_handler(answer.start_answering, commands=['start_answering'])
