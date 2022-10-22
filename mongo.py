@@ -27,6 +27,13 @@ class AbstarctMongoDB(ABC):
 	
 	async def find_all(self) -> list:
 		return await self.collection.find().to_list(None)
+	
+	async def insert_answer(self, field_object_id: str, user_id: int, answer: str) -> str:
+		return await self.insert_one({
+			'to_field': field_object_id,
+			'from': user_id,
+			'text': answer,
+		})
 
 
 class MongoFieldsDB(AbstarctMongoDB):
@@ -36,3 +43,7 @@ class MongoFieldsDB(AbstarctMongoDB):
 class MongoUsersDB(AbstarctMongoDB):
 	def __init__(self):
 		self.collection = mongo_config.get_mongo_collection_users()
+
+class MongoAnswersDB(AbstarctMongoDB):
+	def __init__(self):
+		self.collection = mongo_config.get_mongo_collection_answers()

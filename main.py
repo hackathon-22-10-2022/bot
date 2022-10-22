@@ -13,7 +13,7 @@ dp = Dispatcher(bot, storage=storage)
 
 
 logging.basicConfig(
-	level=logging.INFO,
+	level=logging.DEBUG,
 	format="%(asctime)s %(levelname)s - %(module)s - %(funcName)s - %(lineno)d: %(message)s",
 	datefmt='%H:%M:%S %d.%m.%Y',
 )
