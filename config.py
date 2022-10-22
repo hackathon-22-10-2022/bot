@@ -19,8 +19,11 @@ class MongoConfig:
     def get_mongo_client() -> motor_asyncio.AsyncIOMotorClient:
         return motor_asyncio.AsyncIOMotorClient(Config().MONGO_DB_URL)
     
-    def get_mongo_collection(self) -> motor_asyncio.AsyncIOMotorCollection:
-        return self.get_mongo_client().hackathon_22_10_2022.spetsdor
+    def get_mongo_collection_fields(self) -> motor_asyncio.AsyncIOMotorCollection:
+        return self.get_mongo_client().hackathon_22_10_2022.fields
+    
+    def get_mongo_collection_users(self) -> motor_asyncio.AsyncIOMotorCollection:
+        return self.get_mongo_client().hackathon_22_10_2022.users
 
 
 config = Config()
