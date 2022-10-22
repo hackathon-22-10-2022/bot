@@ -53,7 +53,7 @@
 	   {
 		  "field_id":5,
 		  "field_name":"Использованные материалы",
-		  "field_type":"checkbox",
+		  "field_type":"radiobox",
 		  "field_description":"Использованные материалы",
 		  "field_values":[
 			 "Кабель",

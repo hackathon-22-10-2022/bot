@@ -1,4 +1,5 @@
 import os
+import json
 from urllib.parse import quote_plus
 
 from motor import motor_asyncio
@@ -15,6 +16,11 @@ class Config:
     def __init__(self):
         self.TELEGRAM_TOKEN_BOT = os.getenv('TELEGRAM_TOKEN_BOT')
         self.MONGO_DB_URL = os.getenv('MONGO_DB_URL')
+        self.PATH_TO_INPUT_DATA = 'input_data.json'
+
+    def get_input_data(self):
+        with open(self.PATH_TO_INPUT_DATA) as f:
+            return json.load(f)
 
 
 class MongoConfig:
@@ -31,5 +37,3 @@ class MongoConfig:
 
 config = Config()
 mongo_config = MongoConfig()
-
-
