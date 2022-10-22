@@ -28,7 +28,7 @@ class AbstarctMongoDB(ABC):
 	async def find_all(self) -> list:
 		return await self.collection.find().to_list(None)
 	
-	async def insert_answer(self, field_object_id: str, user_id: int, answer: str) -> str:
+	async def insert_answer(self, field_object_id: str, user_id: int, answer: list[str] | list[int]) -> str:
 		return await self.insert_one({
 			'to_field': field_object_id,
 			'from': user_id,

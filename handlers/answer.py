@@ -23,7 +23,7 @@ def radio_field_values_to_str(field_values: list) -> str:
 	return str[:-1]
 
 
-async def question_message_sendler(question_number: int, message: Message) -> None:
+async def _question_message_sendler(question_number: int, message: Message) -> None:
 	input_form_data = await MongoFieldsDB().find_all()
 
 	match input_form_data[question_number]['field_type']:
@@ -45,7 +45,7 @@ async def question_message_sendler(question_number: int, message: Message) -> No
 					markdown.hitalic(input_form_data[question_number]['field_name']),
 					markdown.text(input_form_data[question_number]['field_description']),
 					markdown.text(),
-					markdown.text('Выберите один или несколько вариантов:'),
+					markdown.text('Выберите один или несколько вариантов (через запятую):'),
 					markdown.text(checkbox_field_values_to_str(input_form_data[question_number]['field_values'])),
 					sep='\n'
 				),
@@ -77,71 +77,54 @@ async def question_message_sendler(question_number: int, message: Message) -> No
 
 async def start_answering(message: Message, state: FSMContext):
 	await Form.question1.set()
-	await question_message_sendler(0, message)
+	await _question_message_sendler(0, message)
+
+
+async def _answer_generator(state_name: str, state_number: int, state: FSMContext, message: Message):
+	async with state.proxy() as data:
+		data[state_name] = message.text
+	
+	mongo_field = await MongoFieldsDB().find_all()
+	await MongoAnswersDB().insert_answer(mongo_field[state_number]['_id'], message.from_user.id, data[state_name])
+
+	# answer = data['answer1']
+	# if mongo_field[0]['field_type'] == 'checkbox':
+	# 	answer = map(int, data['answer1'].split(', '))
+	if state_number == 4:
+		await state.finish()
+		await message.answer('Спасибо за ответы! Вот они: ')
+		await message.answer(data['answer1'])
+		await message.answer(data['answer2'])
+		await message.answer(data['answer3'])
+		await message.answer(data['answer4'])
+		await message.answer(data['answer5'])	
+		return 
+
+	await Form.next()
+	await _question_message_sendler(state_number + 1, message)
 
 
 async def answer1(message: Message, state: FSMContext):
-	async with state.proxy() as data:
-		data['answer1'] = message.text
-
-	mongo_field_id = await MongoFieldsDB().find_all()
-	await MongoAnswersDB().insert_answer(mongo_field_id[0]['_id'], message.from_user.id, data['answer1'])
-
-	await Form.next()
-	await question_message_sendler(1, message)
-
-
+	await _answer_generator('answer1', 0, state, message)
+	
 
 async def answer2(message: Message, state: FSMContext):
-	async with state.proxy() as data:
-		data['answer2'] = message.text
-	
-	mongo_field_id = await MongoFieldsDB().find_all()
-	await MongoAnswersDB().insert_answer(mongo_field_id[1]['_id'], message.from_user.id, data['answer2'])
-
-	await Form.next()
-	await question_message_sendler(2, message)
-
+	await _answer_generator('answer2', 1, state, message)
 
 
 async def answer3(message: Message, state: FSMContext):
-	async with state.proxy() as data:
-		data['answer3'] = message.text
-
-	mongo_field_id = await MongoFieldsDB().find_all()
-	await MongoAnswersDB().insert_answer(mongo_field_id[2]['_id'], message.from_user.id, data['answer3'])
-
-	await Form.next()
-	await question_message_sendler(3, message)
+	await _answer_generator('answer3', 2, state, message)
 
 
 
 async def answer4(message: Message, state: FSMContext):
-	async with state.proxy() as data:
-		data['answer4'] = message.text
-
-	mongo_field_id = await MongoFieldsDB().find_all()
-	await MongoAnswersDB().insert_answer(mongo_field_id[3]['_id'], message.from_user.id, data['answer4'])
-
-	await Form.next()
-	await question_message_sendler(4, message)
-
+	await _answer_generator('answer4', 3, state, message)
 
 
 async def answer5(message: Message, state: FSMContext):
-	async with state.proxy() as data:
-		data['answer5'] = message.text
+	await _answer_generator('answer5', 4, state, message)
+
+
 	
-	mongo_field_id = await MongoFieldsDB().find_all()
-	await MongoAnswersDB().insert_answer(mongo_field_id[4]['_id'], message.from_user.id, data['answer5'])
-
-	await state.finish()
-
-	await message.answer('Спасибо за ответы! Вот они: ')
-	await message.answer(data['answer1'])
-	await message.answer(data['answer2'])
-	await message.answer(data['answer3'])
-	await message.answer(data['answer4'])
-	await message.answer(data['answer5'])
 
 	
