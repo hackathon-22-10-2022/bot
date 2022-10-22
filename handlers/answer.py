@@ -2,26 +2,9 @@ from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
 from aiogram.utils import markdown
 
-from config import config
-import re
+from utils import convert_str_with_commas_to_list, checkbox_field_values_to_str, radio_field_values_to_str
 from forms import Form
 from mongo import MongoAnswersDB, MongoFieldsDB
-
-
-def checkbox_field_values_to_str(field_values: dict) -> str:
-    str = ''
-    for key, value in field_values.items():
-        str += f'{key}: {value}\n'
-    return str[:-1]
-
-
-def radio_field_values_to_str(field_values: list) -> str:
-    str = ''
-    i = 1
-    for value in field_values:
-        str += f'{i}: {value}\n'
-        i += 1
-    return str[:-1]
 
 
 async def _question_message_sendler(question_number: int, message: Message) -> None:
@@ -81,9 +64,6 @@ async def start_answering(message: Message, state: FSMContext):
     await _question_message_sendler(0, message)
 
 
-def _convert_str_with_commas_to_list(str_with_commas: str) -> list[int]:
-    return [int(x) for x in re.findall(r'\b\d+\b', str_with_commas)]
-
 
 async def _answer_validation(field_type: str, field_values: dict, answer: str) -> bool:
     match field_type:
@@ -91,7 +71,7 @@ async def _answer_validation(field_type: str, field_values: dict, answer: str) -
             return True
 
         case 'checkbox':
-            answer = _convert_str_with_commas_to_list(answer)
+            answer = convert_str_with_commas_to_list(answer)
             if len(answer) == 0:
                 return False
             for a in answer:
@@ -115,13 +95,22 @@ async def _answer_validation(field_type: str, field_values: dict, answer: str) -
 async def _answer_generator(state_name: str, state_number: int, state: FSMContext, message: Message):
     async with state.proxy() as data:
         data[state_name] = message.text
-    
-    mongo_field = await MongoFieldsDB().find_all()
-    await MongoAnswersDB().insert_answer(mongo_field[state_number]['_id'], message.from_user.id, data[state_name])
 
-    if not await _answer_validation(mongo_field[state_number]['field_type'], mongo_field[state_number]['field_values'], data[state_name]):
-        await message.reply('Попробуйте ввести ответ ещё раз!')
-        return
+    mongo_field = await MongoFieldsDB().find_all()
+
+    if mongo_field[state_number]['field_type'] != 'text':
+        if not await _answer_validation(mongo_field[state_number]['field_type'], mongo_field[state_number]['field_values'], data[state_name]):
+            await message.reply('Попробуйте ввести ответ ещё раз!')
+            return
+
+    answer = data[state_name]
+    match mongo_field[state_number]['field_type']:
+        case 'checkbox':
+            answer = convert_str_with_commas_to_list(answer)
+        case 'radiobox':
+            answer = int(answer)
+
+    await MongoAnswersDB().insert_answer(mongo_field[state_number]['_id'], message.from_user.id, answer)
 
     if state_number == 4:
         await state.finish()

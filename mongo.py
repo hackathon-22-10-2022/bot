@@ -32,7 +32,7 @@ class AbstarctMongoDB(ABC):
 		return await self.insert_one({
 			'to_field': field_object_id,
 			'from': user_id,
-			'text': answer,
+			'answer': answer,
 		})
 
 
