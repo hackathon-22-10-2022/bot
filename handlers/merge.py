@@ -11,7 +11,7 @@ from bson.objectid import ObjectId
 from mongo import MongoFieldsDB, MongoAnswersDB, MongoReadyFormsDB
 
 
-async def check_form_need_merge(message: Message):
+async def check_form_need_merge(message: Message | CallbackQuery):
     fields_to_merge = []
     to_merge = []
     merged_fields = []
@@ -53,9 +53,9 @@ async def check_form_need_merge(message: Message):
             text="Есть нерешенные конфликты в форме. С помощью кнопок, решите их.",
             reply_markup=inline_kb_full,
         )
-    else:
+    elif isinstance(message, CallbackQuery):
         await message.message.delete()
-        await message.bot.send_message(
+        await message.message.answer(
             text="Есть нерешенные конфликты в форме. С помощью кнопок, решите их.",
             reply_markup=inline_kb_full,
         )
