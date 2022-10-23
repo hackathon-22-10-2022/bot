@@ -148,6 +148,12 @@ async def _answer_validation(field_type: str, field_values: dict, answer: str) -
 async def _answer_generator(
     state_name: str, state_number: int, state: FSMContext, message: Message
 ):
+    if message.text == '/skip':
+        await message.answer("Вы пропустили вопрос.")
+        await FormAllQuestions.next()
+        await _question_message_sendler(state_number + 1, message)
+        return
+
     async with state.proxy() as data:
         data[state_name] = message.text
 
@@ -196,7 +202,8 @@ async def _answer_generator(
         await state.finish()
         await message.answer("Спасибо за ответы! Вот они: ")
         await message.answer(
-            await get_all_user_answers_to_message(message.from_user.id)
+            await get_all_user_answers_to_message(message.from_user.id),
+            reply_markup=edit_after_send_answers(),
         )
         return
 

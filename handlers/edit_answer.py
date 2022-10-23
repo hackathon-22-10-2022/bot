@@ -69,13 +69,24 @@ async def edit_answer(message: Message, state: FSMContext):
     mongo_field = await MongoFieldsDB().find_all()
 
     async with state.proxy() as data:
-        await MongoAnswersDB().update_one(
-            {
+        is_exist = await MongoAnswersDB().find_one({
+            "to_field": mongo_field[data["question_number"] - 1]["_id"],
+            "from": message.from_user.id,
+        })
+        if is_exist:
+            await MongoAnswersDB().update_one(
+                {
+                    "to_field": mongo_field[data["question_number"] - 1]["_id"],
+                    "from": message.from_user.id,
+                },
+                {"$set": {"answer": message.text}},
+            )
+        else:
+            await MongoAnswersDB().insert_one({
                 "to_field": mongo_field[data["question_number"] - 1]["_id"],
                 "from": message.from_user.id,
-            },
-            {"$set": {"answer": message.text}},
-        )
+                "answer": message.text,
+            })
 
     await state.finish()
     await message.answer(
