@@ -20,7 +20,7 @@ async def auto_merge(message: Message, fields, answers):
     text_dict = await merge_texts(fields, answers)
     form_dict = check_boxes_dict | radio_boxes_dict | text_dict
     await ready_form()
-    text = 'Результат автоматического слияния: \n\n'
+    text = "Результат автоматического слияния: \n\n"
     for key, value in form_dict.items():
         if isinstance(value, set):
             v = []  # set to str
@@ -31,6 +31,7 @@ async def auto_merge(message: Message, fields, answers):
         else:
             text += f"{key}: {value}\n"
     await message.answer(text)
+
 
 async def check_form_need_merge(message: Message | CallbackQuery):
     fields = await MongoFieldsDB().find_all()
@@ -43,14 +44,14 @@ async def check_form_need_merge(message: Message | CallbackQuery):
 
     merged_fields_q = await MongoReadyFormsDB().find_all()
     for field in merged_fields_q:
-        merged_fields.append(field.get('field').get('_id'))
+        merged_fields.append(field.get("field").get("_id"))
 
     for field in fields:
-        if field.get('_id') not in merged_fields:
+        if field.get("_id") not in merged_fields:
             fields_to_merge.append(field)
 
     if not fields_to_merge:
-        await message.answer('В форме нет конфликтов!')
+        await message.answer("В форме нет конфликтов!")
         return 0
 
     for field in fields_to_merge:
@@ -91,50 +92,54 @@ async def show_problems_in_field(call_back: CallbackQuery):
     print(field_id)
     field = await MongoFieldsDB().get_by_field_number(field_id)
 
-    answers = await MongoAnswersDB().find_many({"to_field": field.get('_id')})
+    answers = await MongoAnswersDB().find_many({"to_field": field.get("_id")})
     inline_kb_full = InlineKeyboardMarkup(row_width=2)
     was = []
     for answer in answers:
-        if answer.get('answer') not in was:
-            was.append(answer.get('answer'))  # todo распознавать был ли текст до этого или нет
+        if answer.get("answer") not in was:
+            was.append(
+                answer.get("answer")
+            )  # todo распознавать был ли текст до этого или нет
             text = f'Данные от {answer.get("from")}'  # todo рекогнайз из id в текст в юзернейм
 
             inline_kb_full.add(
-                InlineKeyboardButton(text=text, callback_data=f'choose:{answer.get("_id")}')
+                InlineKeyboardButton(
+                    text=text, callback_data=f'choose:{answer.get("_id")}'
+                )
             )
 
     inline_kb_full.add(
-        InlineKeyboardButton(text='◀️ Назад', callback_data='check_need_merge')
+        InlineKeyboardButton(text="◀️ Назад", callback_data="check_need_merge")
     )
     await call_back.message.edit_text(
         text=f'Выберете нужный вариант ответа для поля: {field.get("field_name")}',
-        reply_markup=inline_kb_full
+        reply_markup=inline_kb_full,
     )
 
 
 async def view_version(call_back: CallbackQuery):
-    answer_id = call_back.data.split(':')[-1]
-    answer = await MongoAnswersDB().find_one({'_id': ObjectId(answer_id)})
+    answer_id = call_back.data.split(":")[-1]
+    answer = await MongoAnswersDB().find_one({"_id": ObjectId(answer_id)})
     is_photo = False
     path_to_photo = None
     text = None
-    if isinstance(answer.get('answer'), list):
-        answer_text = ' & '.join(list(map(str, answer.get('answer'))))
+    if isinstance(answer.get("answer"), list):
+        answer_text = " & ".join(list(map(str, answer.get("answer"))))
         text = f'Ответ от пользователя {answer.get("from")}.\n\n{answer_text}'
 
-    elif '/' in str(answer.get('answer')):
+    elif "/" in str(answer.get("answer")):
         is_photo = True
-        path_to_photo = answer.get('answer')
+        path_to_photo = answer.get("answer")
     else:
-        answer_text = answer.get('answer')
+        answer_text = answer.get("answer")
         text = f'Ответ от пользователя {answer.get("from")}.\n\n{answer_text}'
 
     inline_kb_full = InlineKeyboardMarkup(row_width=2)
     inline_kb_full.add(
-        InlineKeyboardButton(text='Принять', callback_data=f'accept_answer:{answer_id}')
+        InlineKeyboardButton(text="Принять", callback_data=f"accept_answer:{answer_id}")
     )
     inline_kb_full.add(
-        InlineKeyboardButton(text='◀️ Назад', callback_data=f'check_need_merge')
+        InlineKeyboardButton(text="◀️ Назад", callback_data=f"check_need_merge")
     )
     if is_photo:
         await call_back.message.delete()
@@ -144,25 +149,22 @@ async def view_version(call_back: CallbackQuery):
                 await call_back.message.answer_photo(
                     photo=f,
                     caption=f'Фото от {answer.get("from")}',
-                    reply_markup=inline_kb_full
+                    reply_markup=inline_kb_full,
                 )
 
     else:
         if text:
-            await call_back.message.edit_text(
-                text=text,
-                reply_markup=inline_kb_full
-            )
+            await call_back.message.edit_text(text=text, reply_markup=inline_kb_full)
 
 
 async def accept_answer(call_back: CallbackQuery):
-    answer_id = call_back.data.split(':')[-1]
-    answer = await MongoAnswersDB().find_one({'_id': ObjectId(answer_id)})
-    field = await MongoFieldsDB().find_one({'_id': answer.get('to_field')})
-    if isinstance(answer.get('answer'), list):
-        answer_text = ' & '.join(list(map(str, answer.get('answer'))))
+    answer_id = call_back.data.split(":")[-1]
+    answer = await MongoAnswersDB().find_one({"_id": ObjectId(answer_id)})
+    field = await MongoFieldsDB().find_one({"_id": answer.get("to_field")})
+    if isinstance(answer.get("answer"), list):
+        answer_text = " & ".join(list(map(str, answer.get("answer"))))
     else:
-        answer_text = answer.get('answer')
+        answer_text = answer.get("answer")
     text = f'Ответ от пользователя {answer.get("from")}.\n\n{answer_text} принят!'
 
     await MongoReadyFormsDB().insert_one(
@@ -173,25 +175,22 @@ async def accept_answer(call_back: CallbackQuery):
     )
 
     await call_back.message.delete()
-    await call_back.bot.send_message(
-        text=text,
-        chat_id=call_back.from_user.id
-    )
+    await call_back.bot.send_message(text=text, chat_id=call_back.from_user.id)
 
 
 async def ready_form():
-    json = {'data': []}
+    json = {"data": []}
     ready_answers = await MongoReadyFormsDB().find_all()
     for answer in ready_answers:
-        field = answer.get('field')
-        answer = answer.get('answer')
-        json['data'].append(
+        field = answer.get("field")
+        answer = answer.get("answer")
+        json["data"].append(
             {
-                'to_field_id': field.get('field_id'),
-                'to_fild_name': field.get('field_name'),
-                'field_type': field.get('field_type'),
-                'answer_from': answer.get('from'),
-                'answer': answer.get('answer')
+                "to_field_id": field.get("field_id"),
+                "to_fild_name": field.get("field_name"),
+                "field_type": field.get("field_type"),
+                "answer_from": answer.get("from"),
+                "answer": answer.get("answer"),
             }
         )
     print(json)
