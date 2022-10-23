@@ -3,12 +3,13 @@ from aiogram.dispatcher import FSMContext
 from aiogram.utils import markdown
 
 from config import config
+from keyboards.edit_after_send_answers import edit_after_send_answers
 from utils import (
     convert_str_with_commas_to_list,
     checkbox_field_values_to_str,
     radio_field_values_to_str,
 )
-from forms import Form
+from forms import FormAllQuestions
 from mongo import MongoAnswersDB, MongoFieldsDB
 
 
@@ -82,13 +83,36 @@ async def _question_message_sendler(question_number: int, message: Message) -> N
             )
 
 
+async def get_all_user_answers_to_message(user_id: int) -> str:
+    user_answers = await MongoAnswersDB().get_user_answers(user_id)
+    message_to_send = ''
+    for user_answer in user_answers:
+        field = await MongoFieldsDB().get_by_field_id(user_answer['to_field'])
+
+        message_to_send += markdown.text(
+            markdown.hbold(f"Вопрос {field['field_id']}:"),
+            markdown.hitalic(field['field_name']),
+            markdown.text(field['field_description']),
+            markdown.text(),
+            markdown.text("Ваш ответ:"),
+            markdown.text(user_answer['answer']),
+            sep="\n",
+        ) + '\n' * 2
+
+    return message_to_send
+
+
 async def start_answering(message: Message, state: FSMContext):
-    current_senders = await MongoAnswersDB().get_current_senders()
-    if message.from_user.id in current_senders:
-        await message.answer("Вы уже заполняете форму")
+    user_answers = await MongoAnswersDB().get_user_answers(message.from_user.id)
+    if len(user_answers) > 0:
+        await message.answer("Вы уже заполнили форму. Вы можете её изменить. Ваши ответы будут перезаписаны.")
+        await message.answer(
+            await get_all_user_answers_to_message(message.from_user.id),
+            reply_markup=edit_after_send_answers(),
+        )
         return
 
-    await Form.question1.set()
+    await FormAllQuestions.question1.set()
     await _question_message_sendler(0, message)
 
 
@@ -136,7 +160,7 @@ async def _answer_generator(
         await MongoAnswersDB().insert_answer(
             mongo_field[state_number]["_id"], message.from_user.id, path_to_file
         )
-        await Form.next()
+        await FormAllQuestions.next()
         await _question_message_sendler(state_number + 1, message)
         return
     elif len(message.photo) > 0:
@@ -166,14 +190,10 @@ async def _answer_generator(
     if state_number == 4:
         await state.finish()
         await message.answer("Спасибо за ответы! Вот они: ")
-        await message.answer(data["answer1"])
-        await message.answer(data["answer2"])
-        await message.answer(data["answer3"])
-        await message.answer(data["answer4"])
-        await message.answer(data["answer5"])
+        await message.answer(await get_all_user_answers_to_message(message.from_user.id))
         return
 
-    await Form.next()
+    await FormAllQuestions.next()
     await _question_message_sendler(state_number + 1, message)
 
 

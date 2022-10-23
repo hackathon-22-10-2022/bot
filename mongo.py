@@ -28,11 +28,17 @@ class AbstarctMongoDB(ABC):
     async def find_all(self) -> list:
         return await self.collection.find().to_list(None)
 
+    async def get_by_field_id(self, _id: str) -> dict:
+        return await self.collection.find_one({"_id": _id})
+
 
 class MongoFieldsDB(AbstarctMongoDB):
     def __init__(self):
         super().__init__()
         self.collection = mongo_config.get_mongo_collection_fields()
+
+    async def get_by_field_number(self, field_id: int) -> dict:
+        return await self.collection.find_one({"field_id": field_id})
 
 
 class MongoUsersDB(AbstarctMongoDB):
@@ -71,3 +77,7 @@ class MongoAnswersDB(AbstarctMongoDB):
         for obj in objects:
             current_senders.add(obj["from"])
         return current_senders
+
+    async def get_user_answers(self, user_id: int) -> list[dict]:
+        return await self.find_many({"from": user_id})
+
