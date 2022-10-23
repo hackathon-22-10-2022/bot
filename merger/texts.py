@@ -38,8 +38,7 @@ async def merge_texts(fields, answers):
     for field in fields_to_search:
         answers = []
         for answer in answers:
-            if answer.get('to_field') == field.get('id'):
-                answers.append(answer.get('answer'))
+            answers.append(answer.get('answer'))
 
         result[field.get('field_name')] = _merge_texts(answers)
     return result
