@@ -83,6 +83,11 @@ async def _question_message_sendler(question_number: int, message: Message) -> N
 
 
 async def start_answering(message: Message, state: FSMContext):
+    current_senders = await MongoAnswersDB().get_current_senders()
+    if message.from_user.id in current_senders:
+        await message.answer("Вы уже заполняете форму")
+        return
+
     await Form.question1.set()
     await _question_message_sendler(0, message)
 

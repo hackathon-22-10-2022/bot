@@ -64,3 +64,10 @@ class MongoAnswersDB(AbstarctMongoDB):
                 "answer": answer,
             }
         )
+
+    async def get_current_senders(self) -> set[int]:
+        current_senders = set()
+        objects = await self.find_many({"from": {"$exists": True}})
+        for obj in objects:
+            current_senders.add(obj["from"])
+        return current_senders
