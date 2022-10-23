@@ -21,7 +21,7 @@ async def check_form_need_merge(message: Message):
             to_merge.append(
                 {
                     "field_name": field.get("field_name"),
-                    "field_id": field.get("_id"),
+                    "field_id": field.get("field_id"),
                     "answers_count": len(answers),
                 }
             )
@@ -42,7 +42,26 @@ async def check_form_need_merge(message: Message):
 
 
 async def show_problems_in_field(call_back: CallbackQuery):
-    field_id = call_back.data.split(":")
-    answers = await MongoAnswersDB().find_many({"to_field": field_id})
+    field_id = int(call_back.data.split(":")[-1])
+    print(field_id)
+    field = await MongoFieldsDB().get_by_field_number(field_id)
+
+    answers = await MongoAnswersDB().find_many({"to_field": field.get('_id')})
+    inline_kb_full = InlineKeyboardMarkup(row_width=2)
+    was = []
     for answer in answers:
-        print(answer)
+        if answer.get('answer') not in was:
+            print(answer)
+            was.append(answer.get('answer'))
+            text = answer.get("answer")  # todo рекогнайз из id в текст
+            if isinstance(answer.get('answer'), list):
+                text = '&'.join(answer.get("answer"))
+
+            inline_kb_full.add(
+                InlineKeyboardButton(text=text, callback_data=f'choose:{answer.get("_id")}')
+            )
+
+    await call_back.message.edit_text(
+        text=f'Выберете нужный вариант ответа для поля: {field.get("field_name")}',
+        reply_markup=inline_kb_full
+    )
