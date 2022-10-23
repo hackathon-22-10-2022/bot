@@ -78,6 +78,8 @@ async def view_version(call_back: CallbackQuery):
     answer_id = call_back.data.split(':')[-1]
     answer = await MongoAnswersDB().find_one({'_id': ObjectId(answer_id)})
     is_photo = False
+    path_to_photo = None
+    text = None
     if isinstance(answer.get('answer'), list):
         answer_text = ' & '.join(answer.get('answer'))
         text = f'Ответ от пользователя {answer.get("from")}.\n\n{answer_text}'
@@ -98,16 +100,21 @@ async def view_version(call_back: CallbackQuery):
     )
     if is_photo:
         await call_back.message.delete()
-        await call_back.bot.send_photo(
-            photo=open(path_to_photo, 'rb'),
-            caption=f'Фото от {answer.get("from")}',
-            reply_markup=inline_kb_full
-        )
+
+        if path_to_photo:
+            with open(path_to_photo, "rb") as f:
+                await call_back.message.answer_photo(
+                    photo=f,
+                    caption=f'Фото от {answer.get("from")}',
+                    reply_markup=inline_kb_full
+                )
+
     else:
-        await call_back.message.edit_text(
-            text=text,
-            reply_markup=inline_kb_full
-        )
+        if text:
+            await call_back.message.edit_text(
+                text=text,
+                reply_markup=inline_kb_full
+            )
 
 
 async def accept_answer(call_back: CallbackQuery):
