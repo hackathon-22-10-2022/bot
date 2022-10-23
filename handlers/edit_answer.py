@@ -9,10 +9,12 @@ from keyboards.edit_after_send_answers import edit_after_send_answers
 from mongo import MongoFieldsDB, MongoAnswersDB
 
 
-async def _edit_handler(callback_query: types.CallbackQuery, question_number: int, state: FSMContext):
+async def _edit_handler(
+    callback_query: types.CallbackQuery, question_number: int, state: FSMContext
+):
     await FormOneQuestion.question_number.set()
     async with state.proxy() as data:
-        data['question_number'] = question_number
+        data["question_number"] = question_number
 
     field = await MongoFieldsDB().get_by_field_number(question_number)
 
@@ -20,7 +22,9 @@ async def _edit_handler(callback_query: types.CallbackQuery, question_number: in
         case "text":
             ask = markdown.text("Ответьте на вопрос:")
         case "checkbox":
-            ask = markdown.text("Выберите один или несколько вариантов (через запятую):")
+            ask = markdown.text(
+                "Выберите один или несколько вариантов (через запятую):"
+            )
         case "radiobox":
             ask = markdown.text("Выберите один вариант:")
         case "file":
@@ -65,11 +69,12 @@ async def edit_answer(message: Message, state: FSMContext):
     mongo_field = await MongoFieldsDB().find_all()
 
     async with state.proxy() as data:
-        await MongoAnswersDB().update_one({
-            'to_field': mongo_field[data['question_number'] - 1]["_id"],
-            'from': message.from_user.id
-        },
-            {"$set": {'answer': message.text}}
+        await MongoAnswersDB().update_one(
+            {
+                "to_field": mongo_field[data["question_number"] - 1]["_id"],
+                "from": message.from_user.id,
+            },
+            {"$set": {"answer": message.text}},
         )
 
     await state.finish()
@@ -77,5 +82,3 @@ async def edit_answer(message: Message, state: FSMContext):
         await get_all_user_answers_to_message(message.from_user.id),
         reply_markup=edit_after_send_answers(),
     )
-
-

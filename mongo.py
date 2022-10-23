@@ -61,7 +61,7 @@ class MongoAnswersDB(AbstarctMongoDB):
         self.collection = mongo_config.get_mongo_collection_answers()
 
     async def insert_answer(
-        self, field_object_id: str, user_id: int, answer: list[str] | list[int] | str
+        self, field_object_id: str, user_id: int, answer: list[str] | list[int]
     ) -> str:
         return await self.insert_one(
             {
@@ -81,3 +81,8 @@ class MongoAnswersDB(AbstarctMongoDB):
     async def get_user_answers(self, user_id: int) -> list[dict]:
         return await self.find_many({"from": user_id})
 
+
+class MongoReadyForms(AbstarctMongoDB):
+    def __init__(self):
+        super().__init__()
+        self.collection = mongo_config.get_mongo_collection_ready_from()

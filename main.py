@@ -3,7 +3,7 @@ import logging
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from handlers import start, answer, edit_answer
+from handlers import start, answer, merge, edit_answer
 from config import config
 from forms import FormAllQuestions, FormOneQuestion
 from middleware import WhileListUsersMiddleware
@@ -23,20 +23,48 @@ dp.middleware.setup(WhileListUsersMiddleware())
 dp.register_message_handler(start.start, commands=["start"])
 dp.register_message_handler(answer.start_answering, commands=["start_answering"])
 
-dp.register_message_handler(answer.answer1, state=FormAllQuestions.question1, content_types=['photo', 'text'])
-dp.register_message_handler(answer.answer2, state=FormAllQuestions.question2, content_types=['photo', 'text'])
-dp.register_message_handler(answer.answer3, state=FormAllQuestions.question3, content_types=['photo', 'text'])
-dp.register_message_handler(answer.answer4, state=FormAllQuestions.question4, content_types=['photo', 'text'])
-dp.register_message_handler(answer.answer5, state=FormAllQuestions.question5, content_types=['photo', 'text'])
+dp.register_message_handler(
+    answer.answer1, state=FormAllQuestions.question1, content_types=["photo", "text"]
+)
+dp.register_message_handler(
+    answer.answer2, state=FormAllQuestions.question2, content_types=["photo", "text"]
+)
+dp.register_message_handler(
+    answer.answer3, state=FormAllQuestions.question3, content_types=["photo", "text"]
+)
+dp.register_message_handler(
+    answer.answer4, state=FormAllQuestions.question4, content_types=["photo", "text"]
+)
+dp.register_message_handler(
+    answer.answer5, state=FormAllQuestions.question5, content_types=["photo", "text"]
+)
 
-dp.register_callback_query_handler(edit_answer.edit1, lambda c: c.data == 'edit_after_send_answers-1')
-dp.register_callback_query_handler(edit_answer.edit2, lambda c: c.data == 'edit_after_send_answers-2')
-dp.register_callback_query_handler(edit_answer.edit3, lambda c: c.data == 'edit_after_send_answers-3')
-dp.register_callback_query_handler(edit_answer.edit4, lambda c: c.data == 'edit_after_send_answers-4')
-dp.register_callback_query_handler(edit_answer.edit5, lambda c: c.data == 'edit_after_send_answers-5')
+dp.register_callback_query_handler(
+    edit_answer.edit1, lambda c: c.data == "edit_after_send_answers-1"
+)
+dp.register_callback_query_handler(
+    edit_answer.edit2, lambda c: c.data == "edit_after_send_answers-2"
+)
+dp.register_callback_query_handler(
+    edit_answer.edit3, lambda c: c.data == "edit_after_send_answers-3"
+)
+dp.register_callback_query_handler(
+    edit_answer.edit4, lambda c: c.data == "edit_after_send_answers-4"
+)
+dp.register_callback_query_handler(
+    edit_answer.edit5, lambda c: c.data == "edit_after_send_answers-5"
+)
 
-dp.register_message_handler(edit_answer.edit_answer, state=FormOneQuestion.question_answer, content_types=['photo', 'text'])
+dp.register_message_handler(
+    edit_answer.edit_answer,
+    state=FormOneQuestion.question_answer,
+    content_types=["photo", "text"],
+)
 
+dp.register_message_handler(merge.check_form_need_merge, commands=["merge"])
+dp.register_callback_query_handler(
+    merge.show_problems_in_field, lambda c: "merge" in c.data
+)
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
 

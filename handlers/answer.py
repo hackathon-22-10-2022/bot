@@ -85,19 +85,22 @@ async def _question_message_sendler(question_number: int, message: Message) -> N
 
 async def get_all_user_answers_to_message(user_id: int) -> str:
     user_answers = await MongoAnswersDB().get_user_answers(user_id)
-    message_to_send = ''
+    message_to_send = ""
     for user_answer in user_answers:
-        field = await MongoFieldsDB().get_by_field_id(user_answer['to_field'])
+        field = await MongoFieldsDB().get_by_field_id(user_answer["to_field"])
 
-        message_to_send += markdown.text(
-            markdown.hbold(f"Вопрос {field['field_id']}:"),
-            markdown.hitalic(field['field_name']),
-            markdown.text(field['field_description']),
-            markdown.text(),
-            markdown.text("Ваш ответ:"),
-            markdown.text(user_answer['answer']),
-            sep="\n",
-        ) + '\n' * 2
+        message_to_send += (
+            markdown.text(
+                markdown.hbold(f"Вопрос {field['field_id']}:"),
+                markdown.hitalic(field["field_name"]),
+                markdown.text(field["field_description"]),
+                markdown.text(),
+                markdown.text("Ваш ответ:"),
+                markdown.text(user_answer["answer"]),
+                sep="\n",
+            )
+            + "\n" * 2
+        )
 
     return message_to_send
 
@@ -105,7 +108,9 @@ async def get_all_user_answers_to_message(user_id: int) -> str:
 async def start_answering(message: Message, state: FSMContext):
     user_answers = await MongoAnswersDB().get_user_answers(message.from_user.id)
     if len(user_answers) > 0:
-        await message.answer("Вы уже заполнили форму. Вы можете её изменить. Ваши ответы будут перезаписаны.")
+        await message.answer(
+            "Вы уже заполнили форму. Вы можете её изменить. Ваши ответы будут перезаписаны."
+        )
         await message.answer(
             await get_all_user_answers_to_message(message.from_user.id),
             reply_markup=edit_after_send_answers(),
@@ -153,7 +158,7 @@ async def _answer_generator(
             await message.reply("Отправьте фотографию!")
             return
 
-        path_to_file = f'{config.BASE_DIR}/{config.PATH_TO_USERS_FILE_FOLDER}/{state_number}_{message.from_user.id}.jpg'
+        path_to_file = f"{config.BASE_DIR}/{config.PATH_TO_USERS_FILE_FOLDER}/{state_number}_{message.from_user.id}.jpg"
         await message.photo[-1].download(destination_file=path_to_file)
         async with state.proxy() as data:
             data[state_name] = path_to_file
@@ -190,7 +195,9 @@ async def _answer_generator(
     if state_number == 4:
         await state.finish()
         await message.answer("Спасибо за ответы! Вот они: ")
-        await message.answer(await get_all_user_answers_to_message(message.from_user.id))
+        await message.answer(
+            await get_all_user_answers_to_message(message.from_user.id)
+        )
         return
 
     await FormAllQuestions.next()
