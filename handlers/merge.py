@@ -26,18 +26,16 @@ async def auto_merge(message: Message, fields, answers):
             for z in value:
                 v.append(str(z))
 
-            text += f"<b>{key}:</b> {', '.join(v)}\n"
+            text += f"{key}: {', '.join(v)}\n"
         else:
-            text += f"<b>{key}:</b> {value}\n"
-    await message.answer(
-        text
-    )
-
+            text += f"{key}: {value}\n"
+    await message.answer(text)
 
 async def check_form_need_merge(message: Message | CallbackQuery):
     fields = await MongoFieldsDB().find_all()
     answers = await MongoAnswersDB().find_all()
-    await auto_merge(message, fields, answers)
+    if isinstance(message, Message):
+        await auto_merge(message, fields, answers)
     fields_to_merge = []
     to_merge = []
     merged_fields = []

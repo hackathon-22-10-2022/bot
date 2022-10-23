@@ -3,7 +3,6 @@ from aiogram.utils import markdown
 
 
 async def start(message: Message):
-    await
 
     await message.answer(
         markdown.text(
