@@ -1,8 +1,8 @@
 from mongo import MongoAnswersDB, MongoFieldsDB
 
 
-async def megre_checkboxes(_):
-    answers = await MongoAnswersDB().find_all()
+async def merge_checkboxes(fields, answers):
+
     fields = await MongoFieldsDB().find_all()
     data = {}
     fields_to_search = []

@@ -8,14 +8,23 @@ from aiogram.types import (
 )
 from bson.objectid import ObjectId
 
+from merger.checkboxs import merge_checkboxes
 from mongo import MongoFieldsDB, MongoAnswersDB, MongoReadyFormsDB
 
 
+async def auto_merge(message: Message, fields, answers):
+    check_boxes_dict = await merge_checkboxes(fields, answers)
+    text_dict = 2132131
+
+
 async def check_form_need_merge(message: Message | CallbackQuery):
+    fields = await MongoFieldsDB().find_all()
+    answers = await MongoAnswersDB().find_all()
+    await auto_merge(message, fields, answers)
     fields_to_merge = []
     to_merge = []
     merged_fields = []
-    fields = await MongoFieldsDB().find_all()
+
     merged_fields_q = await MongoReadyFormsDB().find_all()
     for field in merged_fields_q:
         merged_fields.append(field.get('field').get('_id'))
