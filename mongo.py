@@ -85,7 +85,7 @@ class MongoAnswersDB(AbstarctMongoDB):
         return await self.find_many({"to_field": to_field})
 
 
-class MongoReadyForms(AbstarctMongoDB):
+class MongoReadyFormsDB(AbstarctMongoDB):
     def __init__(self):
         super().__init__()
         self.collection = mongo_config.get_mongo_collection_ready_from()

@@ -69,6 +69,11 @@ dp.register_callback_query_handler(
 dp.register_callback_query_handler(
     merge.view_version, lambda c: c.data.startswith('choose:')
 )
+dp.register_callback_query_handler(
+    merge.accept_answer, lambda c: c.data.startswith('accept_answer')
+)
+dp.register_message_handler(merge.ready_form, commands=['ready_form'])
+
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
 

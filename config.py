@@ -45,6 +45,5 @@ class MongoConfig:
     def get_mongo_collection_ready_from(self) -> motor_asyncio.AsyncIOMotorCollection:
         return self.get_mongo_client().hackathon_22_10_2022.ready_form
 
-
 config = Config()
 mongo_config = MongoConfig()
