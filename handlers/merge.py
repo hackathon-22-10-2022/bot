@@ -9,11 +9,13 @@ from aiogram.types import (
 from bson.objectid import ObjectId
 
 from merger.checkboxs import merge_checkboxes
+from merger.radiobuttons import merge_radiobox
 from mongo import MongoFieldsDB, MongoAnswersDB, MongoReadyFormsDB
 
 
 async def auto_merge(message: Message, fields, answers):
     check_boxes_dict = await merge_checkboxes(fields, answers)
+    radio_boxes_dict = await merge_radiobox(fields, answers)
     text_dict = 2132131
 
 

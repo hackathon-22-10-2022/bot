@@ -6,7 +6,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from handlers import start, answer, merge, edit_answer
 from config import config
 from forms import FormAllQuestions, FormOneQuestion
-from merger.checkboxs import megre_checkboxes
+from merger.checkboxs import merge_checkboxes
 from middleware import WhileListUsersMiddleware
 
 storage = MemoryStorage()
@@ -74,7 +74,7 @@ dp.register_callback_query_handler(
     merge.accept_answer, lambda c: c.data.startswith('accept_answer')
 )
 dp.register_message_handler(merge.ready_form, commands=['ready_form'])
-dp.register_message_handler(megre_checkboxes, commands=['test'])
+dp.register_message_handler(merge_checkboxes, commands=['test'])
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
 
