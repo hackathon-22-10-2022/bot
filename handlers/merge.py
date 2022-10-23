@@ -58,7 +58,6 @@ async def show_problems_in_field(call_back: CallbackQuery):
     was = []
     for answer in answers:
         if answer.get('answer') not in was:
-            print(answer)
             was.append(answer.get('answer'))  # todo распознавать был ли текст до этого или нет
             text = f'Данные от {answer.get("from")}'  # todo рекогнайз из id в текст в юзернейм
 
