@@ -41,8 +41,8 @@ async def check_form_need_merge(message: Message):
     )
 
 
-async def show_problems_in_field(call_back: CallbackQuery):
-    field_id = call_back.data.split(":")
+async def show_problems_in_field(callback_query: CallbackQuery):
+    field_id = callback_query.data.split(":")
     answers = await MongoAnswersDB().find_many({"to_field": field_id})
     for answer in answers:
         print(answer)
