@@ -4,7 +4,7 @@ import re
 def checkbox_field_values_to_str(field_values: dict) -> str:
     strnig = ""
     for key, value in field_values.items():
-        strnig += f"{key}: {value}\n"
+        strnig += f"[] {key}: {value}\n"
     return strnig[:-1]
 
 
@@ -12,7 +12,7 @@ def radio_field_values_to_str(field_values: list) -> str:
     string = ""
     i = 1
     for value in field_values:
-        string += f"{i}: {value}\n"
+        string += f"⚪️ {i}: {value}\n"
         i += 1
     return string[:-1]
 
