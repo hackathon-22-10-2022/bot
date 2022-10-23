@@ -21,7 +21,14 @@ async def auto_merge(message: Message, fields, answers):
     form_dict = check_boxes_dict | radio_boxes_dict | text_dict
     text = 'Результат автоматического слияния: \n\n'
     for key, value in form_dict.items():
-        text += f"<b>{key}:</b> {value}\n"
+        if isinstance(value, set):
+            v = []  # set to str
+            for z in value:
+                v.append(str(z))
+
+            text += f"<b>{key}:</b> {', '.join(v)}\n"
+        else:
+            text += f"<b>{key}:</b> {value}\n"
     await message.answer(
         text
     )
