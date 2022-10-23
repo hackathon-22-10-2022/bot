@@ -65,3 +65,6 @@ async def show_problems_in_field(call_back: CallbackQuery):
         text=f'Выберете нужный вариант ответа для поля: {field.get("field_name")}',
         reply_markup=inline_kb_full
     )
+
+
+async def
