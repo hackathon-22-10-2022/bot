@@ -81,6 +81,9 @@ class MongoAnswersDB(AbstarctMongoDB):
     async def get_user_answers(self, user_id: int) -> list[dict]:
         return await self.find_many({"from": user_id})
 
+    async def get_filter_by_to_field(self, to_field: str) -> list[dict]:
+        return await self.find_many({"to_field": to_field})
+
 
 class MongoReadyForms(AbstarctMongoDB):
     def __init__(self):

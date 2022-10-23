@@ -1,3 +1,5 @@
+import time
+
 from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
 from aiogram.utils import markdown
@@ -82,6 +84,23 @@ async def _question_message_sendler(question_number: int, message: Message) -> N
                 ),
             )
 
+    mongo_field = await MongoFieldsDB().find_all()
+    answers_to_current_question = await MongoAnswersDB().get_filter_by_to_field(
+        mongo_field[question_number]["_id"]
+    )
+    message_to_send = ""
+    for answer in answers_to_current_question:
+        message_to_send += (
+            markdown.text(
+                markdown.hbold(f"Ответ {answer['from']}:"),
+                markdown.text(answer["answer"]),
+                sep="\n",
+            )
+            + "\n" * 2
+        )
+    if message_to_send != "":
+        await message.answer(message_to_send)
+
 
 async def get_all_user_answers_to_message(user_id: int) -> str:
     user_answers = await MongoAnswersDB().get_user_answers(user_id)
@@ -148,7 +167,19 @@ async def _answer_validation(field_type: str, field_values: dict, answer: str) -
 async def _answer_generator(
     state_name: str, state_number: int, state: FSMContext, message: Message
 ):
-    if message.text == '/skip':
+
+    mongo_field = await MongoFieldsDB().find_all()
+    answers_to_current_question = await MongoAnswersDB().get_filter_by_to_field(
+        mongo_field[state_number]["_id"]
+    )
+    if message.text == "/skip":
+        if len(answers_to_current_question) == 0:
+            await message.answer(
+                "Вы не можете пропустить этот вопрос, так как он обязателен для заполнения."
+            )
+            await _question_message_sendler(state_number, message)
+            return
+
         await message.answer("Вы пропустили вопрос.")
         await FormAllQuestions.next()
         await _question_message_sendler(state_number + 1, message)
@@ -157,14 +188,12 @@ async def _answer_generator(
     async with state.proxy() as data:
         data[state_name] = message.text
 
-    mongo_field = await MongoFieldsDB().find_all()
-
     if mongo_field[state_number]["field_type"] == "file":
         if len(message.photo) == 0:
             await message.reply("Отправьте фотографию!")
             return
 
-        path_to_file = f"{config.BASE_DIR}/{config.PATH_TO_USERS_FILE_FOLDER}/{state_number}_{message.from_user.id}.jpg"
+        path_to_file = f"{config.BASE_DIR}/{config.PATH_TO_USERS_FILE_FOLDER}/{state_number}_{message.from_user.id}_{int(time.time())}.jpg"
         await message.photo[-1].download(destination_file=path_to_file)
         async with state.proxy() as data:
             data[state_name] = path_to_file
