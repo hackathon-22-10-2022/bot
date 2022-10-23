@@ -119,7 +119,7 @@ async def view_version(call_back: CallbackQuery):
     path_to_photo = None
     text = None
     if isinstance(answer.get('answer'), list):
-        answer_text = ' & '.join(answer.get('answer'))
+        answer_text = ' & '.join(list(map(str, answer.get('answer'))))
         text = f'Ответ от пользователя {answer.get("from")}.\n\n{answer_text}'
 
     elif '/' in str(answer.get('answer')):
@@ -160,7 +160,7 @@ async def accept_answer(call_back: CallbackQuery):
     answer = await MongoAnswersDB().find_one({'_id': ObjectId(answer_id)})
     field = await MongoFieldsDB().find_one({'_id': answer.get('to_field')})
     if isinstance(answer.get('answer'), list):
-        answer_text = ' & '.join(answer.get('answer'))
+        answer_text = ' & '.join(list(map(str, answer.get('answer'))))
     else:
         answer_text = answer.get('answer')
     text = f'Ответ от пользователя {answer.get("from")}.\n\n{answer_text} принят!'
