@@ -89,7 +89,10 @@ async def _question_message_sendler(question_number: int, message: Message) -> N
         mongo_field[question_number]["_id"]
     )
     message_to_send = ""
+    photos_to_send = set()
     for answer in answers_to_current_question:
+        if isinstance(answer["answer"], str) and "/files/" in answer["answer"]:
+            photos_to_send.add(answer["answer"])
         message_to_send += (
             markdown.text(
                 markdown.hbold(f"Ответ {answer['from']}:"),
@@ -100,6 +103,12 @@ async def _question_message_sendler(question_number: int, message: Message) -> N
         )
     if message_to_send != "":
         await message.answer(message_to_send)
+
+    for photo in photos_to_send:
+        with open(photo, "rb") as f:
+            await message.answer_photo(
+                photo=f,
+            )
 
 
 async def get_all_user_answers_to_message(user_id: int) -> str:
