@@ -41,7 +41,8 @@ async def check_form_need_merge(message: Message):
             reply_markup=inline_kb_full,
         )
     else:
-        await message.message.edit_text(
+        await message.message.delete()
+        await message.bot.send_message(
             text="Есть нерешенные конфликты в форме. С помощью кнопок, решите их.",
             reply_markup=inline_kb_full,
         )
