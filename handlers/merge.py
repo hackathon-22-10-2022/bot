@@ -11,7 +11,7 @@ from bson.objectid import ObjectId
 from mongo import MongoFieldsDB, MongoAnswersDB
 
 
-async def check_form_need_merge(message: Message):
+async def check_form_need_merge(message_or_callback: Message | CallbackQuery):
     to_merge = []
     fields = await MongoFieldsDB().find_all()
     for field in fields:
@@ -35,14 +35,14 @@ async def check_form_need_merge(message: Message):
         inline_kb_full.add(
             InlineKeyboardButton(field_name, callback_data=callback_data)
         )
-    if isinstance(message, Message):
-        await message.answer(
+    if isinstance(message_or_callback, Message):
+        await message_or_callback.answer(
             text="Есть нерешенные конфликты в форме. С помощью кнопок, решите их.",
             reply_markup=inline_kb_full,
         )
     else:
-        await message.message.delete()
-        await message.bot.send_message(
+        await message_or_callback.message.delete()
+        await message_or_callback.message.answer(
             text="Есть нерешенные конфликты в форме. С помощью кнопок, решите их.",
             reply_markup=inline_kb_full,
         )
