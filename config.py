@@ -12,11 +12,16 @@ load_dotenv()
 class Config:
     TELEGRAM_TOKEN_BOT = None
     MONGO_DB_URL = None
+    PATH_TO_INPUT_DATA = None
+    PATH_TO_USERS_FILE_FOLDER = None
+    BASE_DIR = None
 
     def __init__(self):
         self.TELEGRAM_TOKEN_BOT = os.getenv("TELEGRAM_TOKEN_BOT")
         self.MONGO_DB_URL = os.getenv("MONGO_DB_URL")
         self.PATH_TO_INPUT_DATA = "input_data.json"
+        self.PATH_TO_USERS_FILE_FOLDER = "files"
+        self.BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
     def get_input_data(self):
         with open(self.PATH_TO_INPUT_DATA) as f:

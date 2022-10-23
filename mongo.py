@@ -55,7 +55,7 @@ class MongoAnswersDB(AbstarctMongoDB):
         self.collection = mongo_config.get_mongo_collection_answers()
 
     async def insert_answer(
-        self, field_object_id: str, user_id: int, answer: list[str] | list[int]
+        self, field_object_id: str, user_id: int, answer: list[str] | list[int] | str
     ) -> str:
         return await self.insert_one(
             {

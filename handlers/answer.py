@@ -2,6 +2,7 @@ from aiogram.types import Message
 from aiogram.dispatcher import FSMContext
 from aiogram.utils import markdown
 
+from config import config
 from utils import (
     convert_str_with_commas_to_list,
     checkbox_field_values_to_str,
@@ -88,7 +89,7 @@ async def start_answering(message: Message, state: FSMContext):
 
 async def _answer_validation(field_type: str, field_values: dict, answer: str) -> bool:
     match field_type:
-        case "text":
+        case "text" | "file":
             return True
 
         case "checkbox":
@@ -109,9 +110,6 @@ async def _answer_validation(field_type: str, field_values: dict, answer: str) -
                 return False
             return True
 
-        case "file":
-            return True
-
 
 async def _answer_generator(
     state_name: str, state_number: int, state: FSMContext, message: Message
@@ -121,7 +119,26 @@ async def _answer_generator(
 
     mongo_field = await MongoFieldsDB().find_all()
 
-    if mongo_field[state_number]["field_type"] != "text":
+    if mongo_field[state_number]["field_type"] == "file":
+        if len(message.photo) == 0:
+            await message.reply("Отправьте фотографию!")
+            return
+
+        path_to_file = f'{config.BASE_DIR}/{config.PATH_TO_USERS_FILE_FOLDER}/{state_number}_{message.from_user.id}.jpg'
+        await message.photo[-1].download(destination_file=path_to_file)
+        async with state.proxy() as data:
+            data[state_name] = path_to_file
+        await MongoAnswersDB().insert_answer(
+            mongo_field[state_number]["_id"], message.from_user.id, path_to_file
+        )
+        await Form.next()
+        await _question_message_sendler(state_number + 1, message)
+        return
+    elif len(message.photo) > 0:
+        await message.reply("Отправьте только текст!")
+        return
+
+    if mongo_field[state_number]["field_type"] not in ["text", "file"]:
         if not await _answer_validation(
             mongo_field[state_number]["field_type"],
             mongo_field[state_number]["field_values"],

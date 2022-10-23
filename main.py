@@ -22,11 +22,11 @@ dp.middleware.setup(WhileListUsersMiddleware())
 
 dp.register_message_handler(start.start, commands=["start"])
 dp.register_message_handler(answer.start_answering, commands=["start_answering"])
-dp.register_message_handler(answer.answer1, state=Form.question1)
-dp.register_message_handler(answer.answer2, state=Form.question2)
-dp.register_message_handler(answer.answer3, state=Form.question3)
-dp.register_message_handler(answer.answer4, state=Form.question4)
-dp.register_message_handler(answer.answer5, state=Form.question5)
+dp.register_message_handler(answer.answer1, state=Form.question1, content_types=['photo', 'text'])
+dp.register_message_handler(answer.answer2, state=Form.question2, content_types=['photo', 'text'])
+dp.register_message_handler(answer.answer3, state=Form.question3, content_types=['photo', 'text'])
+dp.register_message_handler(answer.answer4, state=Form.question4, content_types=['photo', 'text'])
+dp.register_message_handler(answer.answer5, state=Form.question5, content_types=['photo', 'text'])
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
