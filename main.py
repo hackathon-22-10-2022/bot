@@ -3,7 +3,7 @@ import logging
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-from handlers import start, answer
+from handlers import start, answer, merge
 from config import config
 from forms import Form
 from middleware import WhileListUsersMiddleware
@@ -28,6 +28,8 @@ dp.register_message_handler(answer.answer3, state=Form.question3, content_types=
 dp.register_message_handler(answer.answer4, state=Form.question4, content_types=['photo', 'text'])
 dp.register_message_handler(answer.answer5, state=Form.question5, content_types=['photo', 'text'])
 
+dp.register_message_handler(merge.check_form_need_merge, commands=['merge'])
+dp.register_callback_query_handler(merge.show_problems_in_field, lambda c: 'merge' in c.data)
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
 
