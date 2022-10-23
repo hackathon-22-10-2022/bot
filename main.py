@@ -62,8 +62,12 @@ dp.register_message_handler(
 )
 
 dp.register_message_handler(merge.check_form_need_merge, commands=["merge"])
+dp.register_callback_query_handler(merge.check_form_need_merge, lambda c: c.data == 'check_need_merge')
 dp.register_callback_query_handler(
     merge.show_problems_in_field, lambda c: c.data.startswith('merge')
+)
+dp.register_callback_query_handler(
+    merge.view_version, lambda c: c.data.startswith('choose:')
 )
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
