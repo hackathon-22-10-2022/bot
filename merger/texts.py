@@ -1,3 +1,7 @@
+
+
+
+
 def merge_texts(texts: list[str]) -> str:
     if len(texts) in [0, 1]:
         return "".join(texts)
