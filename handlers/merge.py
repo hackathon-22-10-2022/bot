@@ -8,14 +8,27 @@ from aiogram.types import (
 )
 from bson.objectid import ObjectId
 
-from mongo import MongoFieldsDB, MongoAnswersDB
+from mongo import MongoFieldsDB, MongoAnswersDB, MongoReadyFormsDB
 
 
 async def check_form_need_merge(message: Message):
+    fields_to_merge = []
     to_merge = []
+    merged_fields = []
     fields = await MongoFieldsDB().find_all()
-    for field in fields:
+    merged_fields_q = await MongoReadyFormsDB().find_all()
+    for field in merged_fields_q:
+        merged_fields.append(field.get('field').get('_id'))
 
+    for field in fields:
+        if field.get('_id') not in merged_fields:
+            fields_to_merge.append(field)
+
+    if not fields_to_merge:
+        await message.answer('В форме нет конфликтов!')
+        return 0
+
+    for field in fields_to_merge:
         answers = await MongoAnswersDB().find_many({"to_field": field.get("_id")})
 
         if len(answers) > 1:
@@ -121,8 +134,39 @@ async def view_version(call_back: CallbackQuery):
 async def accept_answer(call_back: CallbackQuery):
     answer_id = call_back.data.split(':')[-1]
     answer = await MongoAnswersDB().find_one({'_id': ObjectId(answer_id)})
+    field = await MongoFieldsDB().find_one({'_id': answer.get('to_field')})
     if isinstance(answer.get('answer'), list):
         answer_text = ' & '.join(answer.get('answer'))
     else:
         answer_text = answer.get('answer')
     text = f'Ответ от пользователя {answer.get("from")}.\n\n{answer_text} принят!'
+
+    await MongoReadyFormsDB().insert_one(
+        {
+            "field": field,
+            "answer": answer,
+        }
+    )
+
+    await call_back.message.edit_text(
+        text=text,
+    )
+
+
+async def ready_form(_):
+    json = {'data': []}
+    ready_answers = await MongoReadyFormsDB().find_all()
+    for answer in ready_answers:
+        field = answer.get('field')
+        answer = answer.get('answer')
+        json['data'].append(
+            {
+                'to_field_id': field.get('field_id'),
+                'to_fild_name': field.get('field_name'),
+                'field_type': field.get('field_type'),
+                'answer_from': answer.get('from'),
+                'answer': answer.get('answer')
+            }
+        )
+    print(json)
+    return json
