@@ -1,4 +1,7 @@
-def merge_texts(texts: list[str]) -> str:
+from mongo import MongoFieldsDB
+
+
+def _merge_texts(texts: list[str]) -> str:
     if len(texts) in [0, 1]:
         return "".join(texts)
 
@@ -15,3 +18,28 @@ def merge_texts(texts: list[str]) -> str:
             sorted_list_of_texts[0]['body'] += f"\n«{text['body']}»"
 
     return sorted_list_of_texts[0]['body']
+
+
+async def merge_texts(fields, answers):
+
+    fields = await MongoFieldsDB().find_all()
+    data = {}
+    fields_to_search = []
+    for field in fields:
+        if field.get("field_type") == 'text':
+            fields_to_search.append(
+                {
+                    'id': field.get('_id'),
+                    'field_name': field.get('field_name')
+                }
+            )
+
+    result = {}
+    for field in fields_to_search:
+        answers = []
+        for answer in answers:
+            if answer.get('to_field') == field.get('id'):
+                answers.append(answer.get('answer'))
+
+        result[field.get('field_name')] = _merge_texts(answers)
+    return result
