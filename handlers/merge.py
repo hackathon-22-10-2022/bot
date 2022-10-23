@@ -10,13 +10,21 @@ from bson.objectid import ObjectId
 
 from merger.checkboxs import merge_checkboxes
 from merger.radiobuttons import merge_radiobox
+from merger.texts import merge_texts
 from mongo import MongoFieldsDB, MongoAnswersDB, MongoReadyFormsDB
 
 
 async def auto_merge(message: Message, fields, answers):
     check_boxes_dict = await merge_checkboxes(fields, answers)
     radio_boxes_dict = await merge_radiobox(fields, answers)
-    text_dict = 2132131
+    text_dict = await merge_texts(fields, answers)
+    form_dict = check_boxes_dict | radio_boxes_dict | text_dict
+    text = 'Результат автоматического слияния: \n\n'
+    for key, value in form_dict.items():
+        text += f"<b>{key}:</b> {value}\n"
+    await message.answer(
+        text
+    )
 
 
 async def check_form_need_merge(message: Message | CallbackQuery):

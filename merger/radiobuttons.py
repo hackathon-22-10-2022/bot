@@ -22,6 +22,5 @@ async def merge_radiobox(fields, answers):
                 values_answers.append(answer.get('answer'))
 
         data[field.get('field_name')] = set(values_answers)
-    print(data)
 
     return data
