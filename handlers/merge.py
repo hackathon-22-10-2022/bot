@@ -172,8 +172,10 @@ async def accept_answer(call_back: CallbackQuery):
         }
     )
 
-    await call_back.message.edit_text(
+    await call_back.message.delete()
+    await call_back.bot.send_message(
         text=text,
+        chat_id=call_back.from_user.id
     )
 
 
